@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UI Test</title>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="app" class="p-4 max-w-screen-lg mx-auto">
+
+    <!-- Carousel Section -->
+    <div id="carousel" class="relative mb-8">
+      <div v-for="(slide, index) in slides" :key="index" v-show="currentSlide === index" class="carousel-slide">
+        <img :src="slide.image" :alt="slide.alt" class="carousel-image w-full h-64 object-cover rounded-md">
+      </div>
+      <div id="carousel-dots" class="flex justify-center mt-4 space-x-2">
+        <span v-for="(slide, index) in slides" :key="index" @click="currentSlide = index"
+              :class="{'bg-gray-800': currentSlide === index, 'bg-gray-400': currentSlide !== index}"
+              class="carousel-dot w-3 h-3 rounded-full cursor-pointer transition-colors duration-200"></span>
+      </div>
+      <div id="carousel-prev" class="absolute inset-y-0 left-0 flex items-center">
+        <button @click="prevSlide" class="bg-gray-700 text-white p-2 rounded-l-md">
+          &lt;
+        </button>
+      </div>
+      <div id="carousel-next" class="absolute inset-y-0 right-0 flex items-center">
+        <button @click="nextSlide" class="bg-gray-700 text-white p-2 rounded-r-md">
+          &gt;
+        </button>
+      </div>
+      <button id="static-button" class="mt-4 p-2 bg-blue-500 text-white w-full rounded-md">Static Button</button>
+    </div>
+
+    <!-- Input Section -->
+    <div id="input-section" class="mb-8">
+      <form @submit.prevent="submitForm" class="space-y-4">
+        <div>
+          <input type="email" v-model="email" @input="validateEmail"
+                 :class="{'border-red-500': emailError, 'border-green-500': !emailError && email}"
+                 placeholder="Email" class="input-email p-3 border rounded w-full focus:outline-none focus:ring-2">
+          <p v-if="emailError" class="text-red-500 text-sm mt-1">Invalid email address</p>
+        </div>
+        <div class="relative">
+          <input :type="showPassword ? 'text' : 'password'" v-model="password" @input="validatePassword"
+                 :class="{'border-red-500': passwordError, 'border-green-500': !passwordError && password}"
+                 placeholder="Password" class="input-password p-3 border rounded w-full focus:outline-none focus:ring-2">
+          <button type="button" @click="togglePasswordVisibility"
+                  class="absolute inset-y-0 right-0 px-4 text-gray-600 focus:outline-none">
+            {{ showPassword ? 'Hide' : 'Show' }}
+          </button>
+          <p v-if="passwordError" class="text-red-500 text-sm mt-1">Password must be at least 6 characters</p>
+        </div>
+        <button type="submit" class="mt-4 p-3 bg-blue-500 text-white w-full rounded-md">Submit</button>
+      </form>
+    </div>
+
+    <!-- Scroll Section -->
+    <div id="scroll-section" class="space-y-4">
+      <div id="avatar-scroll" class="flex overflow-x-scroll space-x-4 no-scrollbar py-2">
+        <div v-for="avatar in avatars" :key="avatar.id" class="avatar"></div>
+      </div>
+      <div id="image-scroll" class="h-64 overflow-y-scroll no-scrollbar py-2">
+        <div v-for="image in images" :key="image.id" class="image-item mb-4">
+          <img :src="image.src" :alt="image.alt" class="image w-full h-auto rounded-md">
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    new Vue({
+      el: '#app',
+      data: {
+        slides: [
+          { image: 'https://images.pexels.com/photos/205421/pexels-photo-205421.jpeg?cs=srgb&dl=pexels-craigmdennis-205421.jpg&fm=jpg', alt: 'Slide 1' },
+          { image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ89nlO_uPxUxVmNvkG81iD6q1OkjEzi0k8ZNpuedN_4D2TOAyeNJiXOyoTPV0WKPaBonY&usqp=CAU', alt: 'Slide 2' },
+          { image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTxMtnCsEtbPxJhCxGKGbFDubC5xbfdCnpCklspgkV8oPx0LE8DNGFM8L59CL64jeKyz14&usqp=CAU', alt: 'Slide 3' }
+        ],
+        currentSlide: 0,
+        slideInterval: null,
+        email: '',
+        emailError: false,
+        password: '',
+        passwordError: false,
+        showPassword: false,
+       
+        images: [
+          { id: 1, src: 'https://www.zygal.io/wp-content/uploads/2023/12/NavINfo-Zygal@4x-1.png', alt: 'Image 1' },
+          { id: 2, src: 'https://media.licdn.com/dms/image/C4D33AQHKKcAJOOUviQ/productpage-image_1128_635/0/1654767490477/zygal_edge_image?e=2147483647&v=beta&t=q6bjs0EB0u1bGnEDEjnFpHR6cvJ587Kmx__6Rx4lMZo', alt: 'Image 2' },
+          { id: 3, src: 'https://www.zygal.io/wp-content/uploads/2024/02/Mask-group-5.webp', alt: 'Image 3' }
+        ]
+      },
+      methods: {
+        prevSlide() {
+          this.currentSlide = (this.currentSlide === 0) ? this.slides.length - 1 : this.currentSlide - 1;
+        },
+        nextSlide() {
+          this.currentSlide = (this.currentSlide === this.slides.length - 1) ? 0 : this.currentSlide + 1;
+        },
+        autoPlaySlides() {
+          this.slideInterval = setInterval(this.nextSlide, 3000);
+        },
+        validateEmail() {
+          const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          this.emailError = !emailPattern.test(this.email);
+        },
+        validatePassword() {
+          this.passwordError = this.password.length < 6;
+        },
+        togglePasswordVisibility() {
+          this.showPassword = !this.showPassword;
+        },
+        submitForm() {
+          if (!this.emailError && !this.passwordError) {
+            alert('Form submitted successfully!');
+          }
+        }
+      },
+      mounted() {
+        this.autoPlaySlides();
+      },
+      beforeDestroy() {
+        clearInterval(this.slideInterval);
+      }
+    });
+  </script>
+</body>
+</html>
